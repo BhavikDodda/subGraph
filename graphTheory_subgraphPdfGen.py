@@ -2,22 +2,27 @@ import graphviz
 import math
 
 # GLOBAL VAR STUFF
-l=0.4
 globalX = 0
 globalY = 0
 globalId = 0
-scalingFactorGap=2.5
-XLimit=15 #When it reaches the XLimit it goes to the next line
-YLimit = 25 #When it reaches the YLimit it goes to the next page
 pdfNumber=1
 
 #
-
-import itertools
 vertices=range(6)
 edges=[(0,1),(0,2),(1,2),(1,3),(1,4),(2,4),(2,5),(3,4),(4,5)]
 
+#SETTINGS
+l=0.4
+scalingFactorGap=2.5
+XLimit = 6 #When it reaches the XLimit it goes to the next line
+YLimit = 10 #When it reaches the YLimit it goes to the next page
 
+trigX=l*math.cos(60*math.pi/180)
+trigY=l*math.sin(60*math.pi/180)
+posCoords=[(0,0),(-trigX,-trigY),(trigX,-trigY),(-2*trigX,-2*trigY),(0,-2*trigY),(2*trigX,-2*trigY)] #make this array [] for letting graphviz choose the position of nodes
+#
+
+import itertools
 
 def edgesOutsideNode(n):
     edges00=edges
@@ -46,10 +51,10 @@ def numberOfDrawnEdgesForAnNOfIsolatedVertices(n):
 
 
         for prGraph in twoToThePowerOfKCombinations:
-            if globalX > XLimit*l:
+            if globalX > XLimit:
                 globalX = 0
                 globalY-=l*scalingFactorGap
-            if globalY < -YLimit*l:
+            if globalY < -YLimit:
                 globalY = 0
                 pdfNumber+=1
                 e.render(directory='Downloads').replace('\\', '/')
@@ -62,10 +67,6 @@ def numberOfDrawnEdgesForAnNOfIsolatedVertices(n):
 
 ###
 e = graphviz.Graph('ER',filename='output/er1.gv', engine='neato')
-
-trigX=l*math.cos(60*math.pi/180)
-trigY=l*math.sin(60*math.pi/180)
-posCoords=[(0,0),(-trigX,-trigY),(trigX,-trigY),(-2*trigX,-2*trigY),(0,-2*trigY),(2*trigX,-2*trigY)] #make this array [] for letting graphviz choose the position of nodes
 
 def graphPart(stX,stY,id,combination,restEdges):
     e.attr('node', shape='point',color='black')
