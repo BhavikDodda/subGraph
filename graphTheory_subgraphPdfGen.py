@@ -7,8 +7,8 @@ globalX = 0
 globalY = 0
 globalId = 0
 scalingFactorGap=2.5
-XLimit=15
-YLimit = 25
+XLimit=15 #When it reaches the XLimit it goes to the next line
+YLimit = 25 #When it reaches the YLimit it goes to the next page
 pdfNumber=1
 
 #
@@ -16,21 +16,8 @@ pdfNumber=1
 import itertools
 vertices=range(6)
 edges=[(0,1),(0,2),(1,2),(1,3),(1,4),(2,4),(2,5),(3,4),(4,5)]
-v=len(vertices)
-e=len(edges)
 
-def degOfVertex(n):
-    deg=0
-    for edge in edges:
-        if edge[0]==n or edge[1]==n:
-            deg+=1
 
-    return deg
-
-def edgeExists(tup1):
-    if tup1 in edges or (tup1[1],tup1[0]) in edges:
-        return True
-    return False
 
 def edgesOutsideNode(n):
     edges00=edges
@@ -74,45 +61,39 @@ def numberOfDrawnEdgesForAnNOfIsolatedVertices(n):
 
 
 ###
+e = graphviz.Graph('ER',filename='output/er1.gv', engine='neato')
+
 trigX=l*math.cos(60*math.pi/180)
 trigY=l*math.sin(60*math.pi/180)
-e = graphviz.Graph('ER', filename='output/er1.gv', engine='neato')
+posCoords=[(0,0),(-trigX,-trigY),(trigX,-trigY),(-2*trigX,-2*trigY),(0,-2*trigY),(2*trigX,-2*trigY)] #make this array [] for letting graphviz choose the position of nodes
+
 def graphPart(stX,stY,id,combination,restEdges):
     e.attr('node', shape='point',color='black')
     nodeToggleOn=list(combination)
     nodeToggleOn.extend(list((k1) for k2 in restEdges for k1 in k2))
-    e.node('0_'+id,pos=str(stX)+","+str(stY)+"!",color='black' if 0 in nodeToggleOn else 'grey')
-    e.node('1_'+id,pos=str(stX-trigX)+","+str(stY-trigY)+"!",color='black' if 1 in nodeToggleOn else 'grey')
-    e.node('2_'+id,pos=str(stX+trigX)+","+str(stY-trigY)+"!",color='black' if 2 in nodeToggleOn else 'grey')
-    e.node('3_'+id,pos=str(stX-2*trigX)+","+str(stY-2*trigY)+"!",color='black' if 3 in nodeToggleOn else 'grey')
-    e.node('4_'+id,pos=str(stX)+","+str(stY-2*trigY)+"!",color='black' if 4 in nodeToggleOn else 'grey')
-    e.node('5_'+id,pos=str(stX+2*trigX)+","+str(stY-2*trigY)+"!",color='black' if 5 in nodeToggleOn else 'grey')
+
+    for node00,index in enumerate(vertices):
+        e.node(str(node00)+'_'+id,color='black' if node00 in nodeToggleOn else 'grey',pos=((str(stX+posCoords[index][0])+','+str(stY+posCoords[index][1])+'!') if posCoords else ''))
+
 
     edgeToggle = lambda x,y: ('black' if y==0 else 'bold') if x in restEdges else ('grey' if y==0 else 'dashed')
-    e.edge('0_'+id, '1_'+id,color=edgeToggle((0,1),0),style=edgeToggle((0,1),1))
-    e.edge('0_'+id, '2_'+id,color=edgeToggle((0,2),0),style=edgeToggle((0,2),1))
-    e.edge('1_'+id, '2_'+id,color=edgeToggle((1,2),0),style=edgeToggle((1,2),1))
-    e.edge('1_'+id, '3_'+id,color=edgeToggle((1,3),0),style=edgeToggle((1,3),1))
-    e.edge('1_'+id, '4_'+id,color=edgeToggle((1,4),0),style=edgeToggle((1,4),1))
-    e.edge('2_'+id, '4_'+id,color=edgeToggle((2,4),0),style=edgeToggle((2,4),1))
-    e.edge('2_'+id, '5_'+id,color=edgeToggle((2,5),0),style=edgeToggle((2,5),1))
-    e.edge('3_'+id, '4_'+id,color=edgeToggle((3,4),0),style=edgeToggle((3,4),1))
-    e.edge('4_'+id, '5_'+id,color=edgeToggle((4,5),0),style=edgeToggle((4,5),1))
 
-globalX=0
+    for edge00 in edges:
+        e.edge(str(edge00[0])+'_'+id, str(edge00[1])+'_'+id,color=edgeToggle(edge00,0),style=edgeToggle(edge00,1))
+
 for ii in range(len(vertices)+1):
     numberOfDrawnEdgesForAnNOfIsolatedVertices(ii)
 
-print(globalId)
+print(globalId-1)
 e.render(directory='Downloads').replace('\\', '/')
 #e.view()
 
+######################################################################
 ## Merging PDF files generated https://youtu.be/D1Yf7fF12-g
 from PyPDF2 import PdfMerger
 import os
 merger=PdfMerger()
 pdf_files=['Downloads/output/er'+str(k+1)+'.gv.pdf' for k in range(pdfNumber)]
-print(pdf_files)
 for pdf_file in pdf_files:
     merger.append(pdf_file)
 
